@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+    </head>
+    <body>
+    {% block header %}
+
+
+    {% endblock %}
+    <div class="container-fluid">
+        {% if app.user %}
+            <div class="text-right mt-2 position-relative">
+                Bienvenue {{ app.user.username }} <a class="btn btn-primary" href="{{ path('app_logout') }}">Déconnexion</a>
+            </div>
+        {% endif %}
+        {% block body %}{% endblock %}
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+            <script src="https://kit.fontawesome.com/3c89dcba84.js" crossorigin="anonymous"></script>
+        {% endblock %}
+    </div>
+    </body>
+</html>

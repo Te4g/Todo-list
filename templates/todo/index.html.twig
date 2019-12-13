@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Todo index{% endblock %}
+
+{% block body %}
+
+    {{ form(form, {'attr': {'class': 'form-inline d-flex w-100 mb-2'}, 'name': 'add-todo'}) }}
+
+    <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home"
+               aria-selected="true">En cours</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="archives-tab" data-toggle="tab" href="#archives" role="tab" aria-controls="archives"
+               aria-selected="false">Archives</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+
+        {% for todo in todos %}
+            <div class="card mb-3">
+                <div class="row no-gutters">
+                    <div class="card-body d-flex">
+                        <div class="col">
+                            <h5 class="card-title">{{ todo.title }}</h5>
+                        </div>
+                        <div class="col-6">
+                            <p class="card-text">{{ todo.detail | default('<i><small>Cliquez sur éditer pour détailler votre todo</small></i>') |raw }}</p>
+                        </div>
+                        <div class="col">
+                            <p class="card-text"><small class="text-muted">Créé
+                                    le {{ todo.createdAt|date('d/m/y') }}</small></p>
+                            <p class="card-text"><small class="text-danger">
+                                    {% if todo.endAt is defined %}
+                                        Expire le {{ todo.endAt ? todo.endAt|date("d/m/Y", "Europe/Paris") }}
+                                    {% else %}
+                                        Date d'expiration non définie
+                                    {% endif %}
+                              </small></p>
+                        </div>
+                        <div class="col d-flex flex-column">
+                            <a class="btn btn-outline-primary btn-sm h-100 d-flex flex-column justify-content-center"
+                               data-toggle="collapse"
+                               href="#collapse{{ todo.id }}" role="button" aria-expanded="false"
+                               aria-controls="collapse{{ todo.id }}">
+                                <i class="fas fa-edit fa-lg"></i></a>
+                        </div>
+                        <div class="col">
+                            <div class="row">
+                                <form method="post" action="{{ path('todo_old', {'id': todo.id}) }}"
+                                      onsubmit="return confirm('Confirmer l\'archivage ?')">
+                                    <button class="btn btn-outline-secondary btn-sm">Archiver</button>
+                                </form>
+                            </div>
+                            <div class="row">
+                                <form method="post" action="{{ path('todo_delete', {'id': todo.id}) }}"
+                                      onsubmit="return confirm('Confirmer la suppression ?');">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ todo.id) }}">
+                                    <button class="btn btn-outline-danger btn-sm mt-1">Supprimer</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row no-gutters">
+                    <div class="collapse" id="collapse{{ todo.id }}">
+
+                        <form name="todo" method="post" action="{{ path('todo_edit', {'id': todo.id}) }}">
+                            <div id="todo{{ todo.id }}">
+                                <div class="form-group"><label for="todo_title{{ todo.id }}"
+                                                               class="required">Titre</label><input type="text"
+                                                                                                    id="todo_title{{ todo.id }}"
+                                                                                                    name="todo[title]"
+                                                                                                    required="required"
+                                                                                                    maxlength="255"
+                                                                                                    class="form-control"
+                                                                                                    value="{{ todo.title }}">
+                                </div>
+                                <div class="form-group"><label for="todo_detail{{ todo.id }}"
+                                                               class="required">Détail</label><textarea
+                                            id="todo_detail{{ todo.id }}"
+                                            name="todo[detail]"
+                                            placeholder="Cliquez sur modifier pour détailler votre todo !"
+                                            class="form-control">{{ todo.detail }}</textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="todo_end_at{{ todo.id }}">Date de fin</label>
+                                    <input type="date" id="todo_end_at{{ todo.id }}" name="todo[end_at]"
+                                           value="{% if todo.endAt is not null %}{{ todo.endAt|date("Y-m-d") }}{% endif %}">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">Valider</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <tr>
+                <td colspan="7">no records found</td>
+            </tr>
+        {% endfor %}
+        </div>
+
+        <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archives-tab">
+            {% for todo in oldTodos %}
+                <div class="card mb-3">
+                    <div class="row no-gutters">
+                        <div class="card-body d-flex">
+                            <div class="col">
+                                <h5 class="card-title">{{ todo.title }}</h5>
+                            </div>
+                            <div class="col-6">
+                                <p class="card-text">{{ todo.detail | default('<i><small>Cliquez sur éditer pour détailler votre todo</small></i>') |raw }}</p>
+                            </div>
+                            <div class="col">
+                                <p class="card-text"><small class="text-muted">Créé
+                                        le {{ todo.createdAt|date('d/m/y') }}</small></p>
+                                <p class="card-text"><small class="text-danger">
+                                       {% if todo.endAt is defined %}
+                                        Expire le {{ todo.endAt ? todo.endAt|date("d/m/Y", "Europe/Paris") }}
+                                    {% else %}
+                                        Date d'expiration non définie
+                                        {% endif %}
+                                    </small></p>
+                            </div>
+                            <div class="col d-flex flex-column">
+                                <a class="btn btn-outline-primary btn-sm h-100 d-flex flex-column justify-content-center"
+                                   data-toggle="collapse"
+                                   href="#collapse{{ todo.id }}" role="button" aria-expanded="false"
+                                   aria-controls="collapse{{ todo.id }}">
+                                    <i class="fas fa-edit fa-lg"></i></a>
+                            </div>
+                            <div class="col">
+                                <div class="row">
+                                    <form method="post" action="{{ path('todo_renew', {'id': todo.id}) }}"
+                                          onsubmit="return confirm('Confirmer le désarchivage ?')">
+                                        <button class="btn btn-outline-secondary btn-sm">Désarchiver</button>
+                                    </form>
+                                </div>
+                                <div class="row">
+                                    <form method="post" action="{{ path('todo_delete', {'id': todo.id}) }}"
+                                          onsubmit="return confirm('Confirmer la suppression ?');">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ todo.id) }}">
+                                        <button class="btn btn-outline-danger btn-sm mt-1">Supprimer</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row no-gutters">
+                        <div class="collapse" id="collapse{{ todo.id }}">
+
+                            <form name="todo" method="post" action="{{ path('todo_edit', {'id': todo.id}) }}">
+                                <div id="todo{{ todo.id }}">
+                                    <div class="form-group"><label for="todo_title{{ todo.id }}"
+                                                                   class="required">Titre</label><input type="text"
+                                                                                                        id="todo_title{{ todo.id }}"
+                                                                                                        name="todo[title]"
+                                                                                                        required="required"
+                                                                                                        maxlength="255"
+                                                                                                        class="form-control"
+                                                                                                        value="{{ todo.title }}">
+                                    </div>
+                                    <div class="form-group"><label for="todo_detail{{ todo.id }}"
+                                                                   class="required">Détail</label><textarea
+                                                id="todo_detail{{ todo.id }}"
+                                                name="todo[detail]"
+                                                placeholder="Cliquez sur modifier pour détailler votre todo !"
+                                                class="form-control">{{ todo.detail }}</textarea>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="todo_end_at{{ todo.id }}">Date de fin</label>
+                                        <input type="date" id="todo_end_at{{ todo.id }}" name="todo[end_at]"
+                                               value="{% if todo.endAt is not null %}{{ todo.endAt|date("Y-m-d") }}{% endif %}">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-outline-primary">Valider</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            {% else %}
+                <tr>
+                    <td colspan="7">no records found</td>
+                </tr>
+            {% endfor %}
+
+        </div>
+
+
+    </div>
+
+{% endblock %}
